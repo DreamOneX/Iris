@@ -534,41 +534,47 @@ public class IrisObject extends IrisRegistrant {
             } else if(config.getMode().equals(ObjectPlaceMode.MAX_HEIGHT) || config.getMode().equals(ObjectPlaceMode.STILT)) {
                 BlockVector offset = new BlockVector(config.getTranslate().getX(), config.getTranslate().getY(), config.getTranslate().getZ());
                 BlockVector rotatedDimensions = config.getRotation().rotate(new BlockVector(getW(), getH(), getD()), spinx, spiny, spinz).clone();
-
-                for(int i = x - (rotatedDimensions.getBlockX() / 2) + offset.getBlockX(); i <= x + (rotatedDimensions.getBlockX() / 2) + offset.getBlockX(); i++) {
-                    for(int j = z - (rotatedDimensions.getBlockZ() / 2) + offset.getBlockZ(); j <= z + (rotatedDimensions.getBlockZ() / 2) + offset.getBlockZ(); j++) {
-                        int h = placer.getHighest(i, j, getLoader(), config.isUnderwater()) + rty;
-
-                        if(placer.isCarved(i, h, j) || placer.isCarved(i, h - 1, j) || placer.isCarved(i, h - 2, j) || placer.isCarved(i, h - 3, j)) {
+                int xLength = (rotatedDimensions.getBlockX() / 2) + offset.getBlockX();
+                int minX = Math.min(x - xLength, x + xLength);
+                int maxX = Math.max(x - xLength, x + xLength);
+                int zLength = (rotatedDimensions.getBlockZ() / 2) + offset.getBlockZ();
+                int minZ = Math.min(z - zLength, z + zLength);
+                int maxZ = Math.max(z - zLength, z + zLength);
+                for(int i = minX; i <= maxX; i++) {
+                    for(int ii = minZ; ii <= maxZ; ii++) {
+                        int h = placer.getHighest(i, ii, getLoader(), config.isUnderwater()) + rty;
+                        if(placer.isCarved(i, h, ii) || placer.isCarved(i, h - 1, ii) || placer.isCarved(i, h - 2, ii) || placer.isCarved(i, h - 3, ii)) {
                             bail = true;
                             break;
                         }
-
-                        if(h > y) {
+                        if(h > y)
                             y = h;
-                        }
                     }
                 }
             } else if(config.getMode().equals(ObjectPlaceMode.FAST_MAX_HEIGHT) || config.getMode().equals(ObjectPlaceMode.FAST_STILT)) {
                 BlockVector offset = new BlockVector(config.getTranslate().getX(), config.getTranslate().getY(), config.getTranslate().getZ());
                 BlockVector rotatedDimensions = config.getRotation().rotate(new BlockVector(getW(), getH(), getD()), spinx, spiny, spinz).clone();
-
-                for(int i = x - (rotatedDimensions.getBlockX() / 2) + offset.getBlockX(); i <= x + (rotatedDimensions.getBlockX() / 2) + offset.getBlockX(); i += (rotatedDimensions.getBlockX() / 2) + 1) {
-                    for(int j = z - (rotatedDimensions.getBlockZ() / 2) + offset.getBlockZ(); j <= z + (rotatedDimensions.getBlockZ() / 2) + offset.getBlockZ(); j += (rotatedDimensions.getBlockZ() / 2) + 1) {
-                        int h = placer.getHighest(i, j, getLoader(), config.isUnderwater()) + rty;
-
-                        if(placer.isCarved(i, h, j) || placer.isCarved(i, h - 1, j) || placer.isCarved(i, h - 2, j) || placer.isCarved(i, h - 3, j)) {
+                int xRadius = (rotatedDimensions.getBlockX() / 2);
+                int xLength = xRadius + offset.getBlockX();
+                int minX = Math.min(x - xLength, x + xLength);
+                int maxX = Math.max(x - xLength, x + xLength);
+                int zRadius = (rotatedDimensions.getBlockZ() / 2);
+                int zLength = zRadius + offset.getBlockZ();
+                int minZ = Math.min(z - zLength, z + zLength);
+                int maxZ = Math.max(z - zLength, z + zLength);
+                for(int i = minX; i <= maxX; i += Math.abs(xRadius) + 1) {
+                    for(int ii = minZ; ii <= maxZ; ii += Math.abs(zRadius) + 1) {
+                        int h = placer.getHighest(i, ii, getLoader(), config.isUnderwater()) + rty;
+                        if(placer.isCarved(i, h, ii) || placer.isCarved(i, h - 1, ii) || placer.isCarved(i, h - 2, ii) || placer.isCarved(i, h - 3, ii)) {
                             bail = true;
                             break;
                         }
-
-                        if(h > y) {
+                        if(h > y)
                             y = h;
-                        }
                     }
                 }
             } else if(config.getMode().equals(ObjectPlaceMode.MIN_HEIGHT)) {
-                y = 257;
+                y = rdata.getEngine().getHeight() + 1;
                 BlockVector offset = new BlockVector(config.getTranslate().getX(), config.getTranslate().getY(), config.getTranslate().getZ());
                 BlockVector rotatedDimensions = config.getRotation().rotate(new BlockVector(getW(), getH(), getD()), spinx, spiny, spinz).clone();
 
@@ -585,7 +591,7 @@ public class IrisObject extends IrisRegistrant {
                     }
                 }
             } else if(config.getMode().equals(ObjectPlaceMode.FAST_MIN_HEIGHT)) {
-                y = 257;
+                y = rdata.getEngine().getHeight() + 1;
                 BlockVector offset = new BlockVector(config.getTranslate().getX(), config.getTranslate().getY(), config.getTranslate().getZ());
                 BlockVector rotatedDimensions = config.getRotation().rotate(new BlockVector(getW(), getH(), getD()), spinx, spiny, spinz).clone();
 
@@ -745,6 +751,7 @@ public class IrisObject extends IrisRegistrant {
 
                 data = config.getRotation().rotate(data, spinx, spiny, spinz);
                 xx = x + (int) Math.round(i.getX());
+
                 int yy = y + (int) Math.round(i.getY());
                 zz = z + (int) Math.round(i.getZ());
 
@@ -787,7 +794,6 @@ public class IrisObject extends IrisRegistrant {
 
                 if(!data.getMaterial().equals(Material.AIR) && !data.getMaterial().equals(Material.CAVE_AIR)) {
                     placer.set(xx, yy, zz, data);
-
                     if(tile != null) {
                         placer.setTile(xx, yy, zz, tile);
                     }
@@ -820,14 +826,27 @@ public class IrisObject extends IrisRegistrant {
                 i = config.getRotation().rotate(i.clone(), spinx, spiny, spinz).clone();
                 i = config.getTranslate().translate(i.clone(), config.getRotation(), spinx, spiny, spinz).clone();
 
-                if(i.getBlockY() != lowest) {
+                if(i.getBlockY() != lowest)
                     continue;
+
+                for(IrisObjectReplace j : config.getEdit()) {
+                    if(rng.chance(j.getChance())) {
+                        for(BlockData k : j.getFind(rdata)) {
+                            if(j.isExact() ? k.matches(d) : k.getMaterial().equals(d.getMaterial())) {
+                                BlockData newData = j.getReplace(rng, i.getX() + x, i.getY() + y, i.getZ() + z, rdata).clone();
+
+                                if(newData.getMaterial() == d.getMaterial()) {
+                                    d = d.merge(newData);
+                                } else {
+                                    d = newData;
+                                }
+                            }
+                        }
+                    }
                 }
 
-
-                if(d == null || B.isAir(d)) {
+                if(d == null || B.isAir(d))
                     continue;
-                }
 
                 xx = x + (int) Math.round(i.getX());
                 zz = z + (int) Math.round(i.getZ());
@@ -837,15 +856,16 @@ public class IrisObject extends IrisRegistrant {
                     zz += config.warp(rng, i.getZ() + z, i.getY() + y, i.getX() + x, getLoader());
                 }
 
-                int yg = placer.getHighest(xx, zz, getLoader(), config.isUnderwater());
+                int yg = placer.getHighest(xx, zz, getLoader(), true);
 
-                if(yv >= 0 && config.isBottom()) {
+                if(config.isWaterloggable() && yg <= placer.getFluidHeight() && d instanceof Waterlogged)
+                    ((Waterlogged) d).setWaterlogged(true);
+
+                if(yv >= 0 && config.isBottom())
                     y += Math.floorDiv(h, 2);
-                }
 
-                for(int j = lowest + y; j > yg - config.getOverStilt() - 1; j--) {
+                for(int j = lowest + y; j > yg - config.getOverStilt() - 1; j--)
                     placer.set(xx, j, zz, d);
-                }
             }
 
             readLock.unlock();
@@ -1118,7 +1138,5 @@ public class IrisObject extends IrisRegistrant {
     }
 
     @Override
-    public void scanForErrors(JSONObject p, VolmitSender sender) {
-
-    }
+    public void scanForErrors(JSONObject p, VolmitSender sender) { }
 }
