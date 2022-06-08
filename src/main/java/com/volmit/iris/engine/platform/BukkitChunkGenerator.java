@@ -64,7 +64,7 @@ import java.util.function.Consumer;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class BukkitChunkGenerator extends ChunkGenerator implements PlatformChunkGenerator {
-    private static final int LOAD_LOCKS = 1_000_000;
+    private static final int LOAD_LOCKS = Runtime.getRuntime().availableProcessors() * 4;
     private final Semaphore loadLock;
     private final IrisWorld world;
     private final File dataLocation;
